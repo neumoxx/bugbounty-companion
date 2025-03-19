@@ -83,9 +83,10 @@ class ImmunefiCompanion(BaseCompanion):
 
     def getRepos(self):
         mainPage = requests.get("https://immunefi.com/explore/?filter=immunefi").text
-        mainMeta = re.findall('id="__NEXT_DATA__" type="application/json">(.*)</script></body></html>', mainPage)
+        mainMeta = re.findall('id="__NEXT_DATA__" type="application/json" (.*)</script></body></html>', mainPage)
         if not mainMeta:
             return
+        mainMeta[0] = mainMeta[0][57:]
         all_projects = json.loads(mainMeta[0])["props"]["pageProps"]["bounties"]
         print("found %d projects"%len(all_projects))
         
@@ -101,11 +102,12 @@ class ImmunefiCompanion(BaseCompanion):
             all_links = set([])
 
             source = requests.get("https://immunefi.com/bounty/%s/"%p).text
-            links = re.findall('id="__NEXT_DATA__" type="application/json">(.*)</script></body></html>', source)
+            links = re.findall('id="__NEXT_DATA__" type="application/json" (.*)</script></body></html>', source)
             pmeta['max_reward'] = int(pstruct['maximum_reward'])
 
             print("#",nr, p, "$$", pmeta["max_reward"])
             for f in links:
+                f = f[57:]
                 dataJson = json.loads(f)
 
                 if "assets_in_scope" in dataJson["props"]["pageProps"]["bounty"].keys():
